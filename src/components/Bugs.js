@@ -1,18 +1,36 @@
 import React, { Component } from 'react';
 import StoreContext from '../contexts/storeContext';
+import { loadBugs } from '../store/bugs';
 
 class Bugs extends Component {
     static contextType = StoreContext;
 
-    componentDidMount(){
-        console.log(this.context);
+    state = { bugs: [] };
+
+    componentDidMount() {
+        const store = this.context;
+
+        this.unsubscribe = store.subscribe(() => {
+            const bugsInSore = store.getState().entities.bugs.list;
+            if(this.state.bugs !== bugsInSore) {
+                this.setState({ bugs: bugsInSore});
+            }
+        }); //this fn is executed every time an action is dispatched
+
+        store.dispatch(loadBugs());
+    }
+
+    componentWillUnmount() {
+        this.unsubscribe();
     }
 
     render() {
         return (
-            <div>
-                Bugs
-            </div>
+            <ul>
+                {this.state.bugs.map(
+                    bug => (<li key={bug.id}>{bug.description}</li>)
+                )}
+            </ul>
         );
     }
 }
